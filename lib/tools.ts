@@ -204,4 +204,4 @@ export function getTool(slug: string): ToolDefinition | undefined {
 }
 
 export const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://mediautilityhub.com";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://pixelkit-olive.vercel.app";
