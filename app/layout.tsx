@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   description:
     "Convert and compress images free in your browser. Private, fast WebP, PNG, JPG and SVG tools—your files never upload.",
   applicationName: "PixelKit",
+  icons: {
+    icon: "/icon.jpg",
+    shortcut: "/icon.jpg",
+    apple: "/icon.jpg",
+  },
   openGraph: {
     type: "website",
     siteName: "PixelKit",

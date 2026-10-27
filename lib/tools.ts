@@ -1,3 +1,5 @@
+import type { OutputFormat } from "@/lib/imageConverter";
+
 export type ToolSlug = "webp-to-png" | "png-to-jpg" | "svg-to-png" | "image-compressor" | "word-to-pdf" | "pdf-compressor";
 export type ToolDefinition = {
   slug: ToolSlug;
@@ -7,7 +9,7 @@ export type ToolDefinition = {
   description: string;
   formats: string[];
   accepts: string;
-  format: string;
+  format: OutputFormat;
   quality: number;
   scale: number;
   compression?: boolean;
@@ -88,37 +90,46 @@ export const tools: ToolDefinition[] = [
   },
   {
     slug: "word-to-pdf",
-    name: "Word to PDF Converter",
+    name: "Word & Text to PDF Converter",
     shortName: "Word to PDF",
-    title: "Free Word to PDF Converter — Browser-Based & Private",
-    description: "Turn DOCX, TXT, and RTF files into PDF documents in your browser. No upload, no install, and no server-side document processing.",
-    formats: ["DOCX", "TXT", "RTF", "PDF"], accepts: ".docx,.txt,.rtf,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document", format: "application/pdf", quality: 1, scale: 1,
-    keywords: ["word to pdf", "docx to pdf", "txt to pdf", "convert document to pdf"],
-    steps: ["Choose a Word, TXT, or RTF file to convert.", "Review the document content and choose Convert to PDF.", "Download the generated PDF instantly."],
+    title: "Free Word to PDF Converter — Private & Browser-Based",
+    description: "Convert DOCX, TXT, RTF, and Markdown files to PDF directly in your browser. Your documents stay on your device.",
+    formats: ["DOCX", "TXT", "RTF", "MD"],
+    accepts: ".docx,.txt,.rtf,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    format: "image/png",
+    quality: 1,
+    scale: 1,
+    keywords: ["word to pdf", "docx to pdf", "text to pdf", "convert document to pdf"],
+    steps: ["Select a DOCX, TXT, RTF, or Markdown file.", "Convert the document to a clean text-based PDF in your browser.", "Download the generated PDF."],
     paragraphs: [
-      "Convert DOCX, TXT, and RTF files to PDF directly in your web browser. This keeps the workflow private and fast: the document is read on your device, converted locally, and then downloaded as a PDF. This is ideal when you need a portable, shareable file for email, forms, legal work, or archiving without requiring a full desktop office suite.",
-      "The document conversion supports common text-based files and DOCX documents. For DOCX files, the content is extracted locally and arranged into a clean PDF layout. TXT, RTF, and Markdown files are converted to plain text and rendered into an easy-to-read PDF. Complex formatting, tables, images, and tracked changes are not preserved exactly by this browser-based conversion flow, so documents with advanced layouts may require a document editor for exact fidelity.",
-      "A PDF is a common final format for sharing because it preserves layout across devices and platforms. It is especially useful when you need a stable document that can be opened on nearly any system without the original Microsoft Word app. The conversion runs locally in the browser, so your document stays in your control and never leaves your device during the conversion process.",
-      "Use this tool for simple and business-friendly document tasks: exporting a text memo, converting a draft for PDF submission, or creating a fixed-layout shareable file from a standard Word document. The tool keeps the process private, quick, and accessible from any modern browser."
+      "Convert common Word and text documents to PDF without uploading them to a server. Select a DOCX, TXT, RTF, or Markdown file and PixelKit creates a downloadable PDF on your device.",
+      "DOCX files are converted by extracting their text and laying it out in a simple PDF. Plain text, RTF, and Markdown files are converted to readable text as well. This lightweight converter does not preserve complex Word formatting, images, tables, headers, or tracked changes. Use a full document editor when exact layout fidelity is essential.",
+      "PDF is convenient for sharing and archiving because it can be opened on many devices without the original editing software. The conversion is performed locally in your browser, so the file contents are not sent to PixelKit.",
+      "Review the resulting PDF before sending it, especially if your source relies on special characters or detailed formatting. Keep the original document if you need to make later edits."
     ],
-    comparison: "DOCX and TXT files are easy to edit, but they may render differently across devices. PDF preserves a consistent layout and is widely accepted for sharing and archiving, which makes it ideal for final distribution."
+    comparison: "DOCX and text files are easy to edit, while PDF is widely supported for sharing. This converter extracts text and creates a simple PDF; it does not reproduce complex Word layouts."
   },
   {
     slug: "pdf-compressor",
     name: "PDF Compressor",
     shortName: "PDF Compressor",
-    title: "Free PDF Compressor — Reduce File Size Privately",
-    description: "Compress PDF files in your browser to shrink file size without uploading sensitive documents to a server.",
-    formats: ["PDF"], accepts: ".pdf,application/pdf", format: "application/pdf", quality: 1, scale: 1, compression: true,
-    keywords: ["pdf compressor", "compress pdf online", "reduce pdf size"],
-    steps: ["Select a PDF file you want to shrink.", "Review the compressed output and size difference.", "Download the optimized PDF file."],
+    title: "Free PDF Compressor — Reduce Size Privately",
+    description: "Re-save PDF files locally to optimize their structure and compare file sizes. No document uploads.",
+    formats: ["PDF"],
+    accepts: ".pdf,application/pdf",
+    format: "image/png",
+    quality: 1,
+    scale: 1,
+    compression: true,
+    keywords: ["pdf compressor", "compress pdf", "reduce pdf size"],
+    steps: ["Select a PDF file from your device.", "Re-save it locally and compare the resulting file size.", "Download the optimized PDF if it meets your needs."],
     paragraphs: [
-      "Reduce PDF size while keeping the document in your browser. This tool re-saves uploaded PDFs locally using the browser library and emits a smaller output when the PDF structure allows optimization. The process is ideal for email attachments, upload forms, and storage savings when you want to keep the original content but reduce the file footprint.",
-      "PDF compression can vary significantly based on how the original file was created. Some PDFs already contain efficient content streams, while others include large embedded images, repeated objects, or rarely used page resources. Re-saving a PDF may reduce file size, but it cannot recover information that was lost in the source file. It is best used as a practical optimization step after preparing a document for sharing or upload.",
-      "This tool works entirely in the browser and does not send your documents to a server. Sensitive material stays local until you choose to download the result. You can instantly compare the original and compressed sizes before saving the new file, which helps you decide if the optimization is worth keeping.",
-      "If you need a smaller email attachment, faster upload, or less disk space, PDF compression is a useful final step. Use it after drafting and proofreading your document, and keep the original if you need a maximum-fidelity source archive."
+      "Re-save a PDF in your browser and check whether the resulting file is smaller. Documents remain on your device; they are not uploaded to a processing server.",
+      "Compression results depend on how the source PDF was created. Re-saving can optimize document structure, but it does not guarantee a smaller file and does not downsample embedded images. Some PDFs may be unchanged or grow slightly.",
+      "Compare the original and output sizes before downloading. Keep your original file, and check the re-saved document in a PDF reader to make sure it still works for your needs.",
+      "This tool is useful as a quick local optimization step, but it is not a substitute for image downsampling or a full-featured PDF optimizer when the file contains large embedded scans."
     ],
-    comparison: "PDF compression reduces storage and upload size for many documents, but gains depend on the original file structure and embedded assets. A re-saved PDF can be smaller without changing the visible content, though some highly optimized files may not shrink much."
+    comparison: "A re-save can optimize some PDF structures, but it cannot guarantee a smaller result or reduce the resolution of embedded images."
   }
 ];
 

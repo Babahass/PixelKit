@@ -1,83 +1,108 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import * as mammoth from "mammoth";
+
+const PAGE_WIDTH = 595.28;
+const PAGE_HEIGHT = 841.89;
+const PAGE_MARGIN = 50;
+const FONT_SIZE = 12;
+const LINE_HEIGHT = 18;
 
 export async function convertWordOrTextToPdf(file: File): Promise<Blob> {
   const name = file.name.toLowerCase();
+  let text: string;
 
   if (name.endsWith(".docx")) {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return createPdfFromText(result.value || "The selected document was empty.");
+    const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+    text = result.value;
+  } else if (name.endsWith(".rtf")) {
+    text = (await file.text())
+      .replace(/\\par[d]?/gi, "\n")
+      .replace(/\\'[0-9a-f]{2}/gi, " ")
+      .replace(/\\u-?\d+\??/gi, " ")
+      .replace(/\\[a-z]+-?\d* ?/gi, "")
+      .replace(/[{}]/g, "");
+  } else if (/\.(txt|md)$/i.test(name) || file.type.startsWith("text/")) {
+    text = await file.text();
+  } else {
+    throw new Error("Choose a DOCX, TXT, RTF, or Markdown file.");
   }
 
-  if (/\.(txt|rtf|md)$/i.test(name) || file.type.startsWith("text/")) {
-    return createPdfFromText(await file.text());
-  }
-
-  throw new Error("Use a .txt, .rtf, .md, or .docx file for conversion.");
+  return createPdfFromText(text);
 }
 
 export async function compressPdf(file: File): Promise<Blob> {
-  const pdf = await PDFDocument.load(await file.arrayBuffer(), { ignoreEncryption: true });
+  const pdf = await PDFDocument.load(await file.arrayBuffer());
   const bytes = await pdf.save({
     useObjectStreams: true,
     addDefaultPage: false,
     updateFieldAppearances: false,
   });
-  return new Blob([bytes], { type: "application/pdf" });
+  const buffer = new Uint8Array(bytes.length);
+  buffer.set(bytes);
+  return new Blob([buffer.buffer], { type: "application/pdf" });
 }
 
 async function createPdfFromText(text: string): Promise<Blob> {
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595.28, 841.89]);
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const lines = wrapText(text || "No text found in this file.", 78);
-  let y = 780;
+  const pdf = await PDFDocument.create();
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const safeText = (text || "No text found in this file.")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[^\x09\x0A\x0D\x20-\xFF]/g, "?");
+  const lines = wrapText(safeText, font);
+  let page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  let y = PAGE_HEIGHT - PAGE_MARGIN;
 
   for (const line of lines) {
-    if (y < 50) {
-      const nextPage = pdfDoc.addPage([595.28, 841.89]);
-      y = 780;
-      nextPage.drawText(line, {
-        x: 50,
+    if (y < PAGE_MARGIN) {
+      page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      y = PAGE_HEIGHT - PAGE_MARGIN;
+    }
+
+    if (line) {
+      page.drawText(line, {
+        x: PAGE_MARGIN,
         y,
-        size: 12,
+        size: FONT_SIZE,
         font,
         color: rgb(0, 0, 0),
       });
-      y -= 18;
-      continue;
     }
-
-    page.drawText(line, {
-      x: 50,
-      y,
-      size: 12,
-      font,
-      color: rgb(0, 0, 0),
-    });
-    y -= 18;
+    y -= LINE_HEIGHT;
   }
 
-  return new Blob([await pdfDoc.save()], { type: "application/pdf" });
+  const bytes = await pdf.save();
+  const buffer = new Uint8Array(bytes.length);
+  buffer.set(bytes);
+  return new Blob([buffer.buffer], { type: "application/pdf" });
 }
 
-function wrapText(input: string, maxCharsPerLine: number): string[] {
-  const cleaned = input.replace(/\r/g, "").trim() || "No text found in this file.";
-  const words = cleaned.split(/\s+/);
+function wrapText(text: string, font: PDFFont): string[] {
+  const maxWidth = PAGE_WIDTH - PAGE_MARGIN * 2;
   const lines: string[] = [];
-  let current = "";
 
-  for (const word of words) {
-    if ((current + " " + word).trim().length <= maxCharsPerLine) {
-      current = `${current} ${word}`.trim();
-      continue;
+  for (const paragraph of text.split("\n")) {
+    let line = "";
+    for (const word of paragraph.split(/\s+/)) {
+      if (!word) continue;
+      const candidate = line ? `${line} ${word}` : word;
+      if (font.widthOfTextAtSize(candidate, FONT_SIZE) <= maxWidth) {
+        line = candidate;
+        continue;
+      }
+
+      if (line) lines.push(line);
+      line = word;
+      while (font.widthOfTextAtSize(line, FONT_SIZE) > maxWidth) {
+        let splitAt = line.length;
+        while (splitAt > 1 && font.widthOfTextAtSize(line.slice(0, splitAt), FONT_SIZE) > maxWidth) {
+          splitAt -= 1;
+        }
+        lines.push(line.slice(0, splitAt));
+        line = line.slice(splitAt);
+      }
     }
-
-    if (current) lines.push(current);
-    current = word;
+    lines.push(line);
   }
 
-  if (current) lines.push(current);
   return lines;
 }

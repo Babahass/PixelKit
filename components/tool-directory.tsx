@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, FileImage, ImageDown, Images, Search, Sparkles } from "lucide-react";
+import { ArrowUpRight, FileArchive, FileImage, FileText, ImageDown, Images, Search, Sparkles } from "lucide-react";
 import { tools } from "@/lib/tools";
 
-const icons = [Images, ImageDown, FileImage, Sparkles];
+const icons = [Images, ImageDown, FileImage, Sparkles, FileText, FileArchive];
 
 export function ToolDirectory() {
   const [query, setQuery] = useState("");

@@ -57,9 +57,6 @@ export function ToolWorkspace({ tool }: { tool: ToolDefinition }) {
   const objectUrlsRef = useRef(new Set<string>());
   const runIdRef = useRef(0);
 
-  entriesRef.current = entries;
-  settingsRef.current = { quality, scale, format };
-
   const makeUrl = useCallback((blob: Blob) => {
     const url = URL.createObjectURL(blob);
     objectUrlsRef.current.add(url);
@@ -75,6 +72,11 @@ export function ToolWorkspace({ tool }: { tool: ToolDefinition }) {
     objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     objectUrlsRef.current.clear();
   }, []);
+
+  useEffect(() => {
+    entriesRef.current = entries;
+    settingsRef.current = { quality, scale, format };
+  }, [entries, quality, scale, format]);
 
   const setQueue = useCallback((next: QueueItem[]) => {
     entriesRef.current = next;
