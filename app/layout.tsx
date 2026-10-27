@@ -7,16 +7,27 @@ import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://mediautilityhub.com";
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+const ogImageUrl = `${siteUrl}/og-image.jpg`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "PixelKit — Free, Private Image Tools",
+    default: "PixelKit — Free, Private Media & Document Utilities",
     template: "%s | PixelKit",
   },
   description:
-    "Convert and compress images free in your browser. Private, fast WebP, PNG, JPG and SVG tools—your files never upload.",
+    "Convert and compress images, DOCX, and PDF documents free in your browser. Private, client-side tools—your files never upload to any server.",
   applicationName: "PixelKit",
+  authors: [{ name: "PixelKit" }],
+  generator: "Next.js",
+  keywords: [
+    "image converter",
+    "word to pdf",
+    "pdf compressor",
+    "webp to png",
+    "compress image online",
+    "private file converter",
+  ],
   icons: {
     icon: "/icon.jpg",
     shortcut: "/icon.jpg",
@@ -25,14 +36,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "PixelKit",
-    title: "PixelKit — Free, Private Image Tools",
-    description: "Convert and compress images free in your browser. Your files stay on your device.",
+    title: "PixelKit — Free, Private Media & Document Utilities",
+    description: "Convert and compress images, Word files, and PDFs directly in your browser.",
     url: siteUrl,
+    images: [
+      {
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+        alt: "PixelKit — Fast. Private. Client-Side.",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
-    title: "PixelKit — Free, Private Image Tools",
-    description: "Free, private image tools that run in your browser.",
+    card: "summary_large_image",
+    title: "PixelKit — Free, Private Media & Document Utilities",
+    description: "Free, private image and document tools that run in your browser.",
+    images: [ogImageUrl],
   },
 };
 
@@ -67,7 +87,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link className="brand footer-brand" href="/">
               <span className="brand-icon"><ImageIcon size={17} /></span> pixelkit<span className="brand-period">.</span>
             </Link>
-            <p>Thoughtful image tools. Your files stay yours.</p>
+            <p>Thoughtful client-side utilities. Your files stay yours.</p>
             <Link href="/privacy-policy">Privacy policy <ArrowUpRight size={13} /></Link>
             <span className="copyright">© <CurrentYear /> PixelKit</span>
           </div>

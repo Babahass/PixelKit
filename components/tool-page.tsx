@@ -3,33 +3,34 @@ import { ChevronRight, ShieldCheck, Sparkles } from "lucide-react";
 import { AdSlot } from "@/components/ad-slot";
 import { ToolWorkspace } from "@/components/tool-workspace";
 import { DocumentWorkspace } from "@/components/document-workspace";
+import { toolJsonLd } from "@/lib/seo";
 import type { ToolDefinition } from "@/lib/tools";
 
 export function ToolPage({ tool }: { tool: ToolDefinition }) {
   const isDocumentTool = tool.slug === "word-to-pdf" || tool.slug === "pdf-compressor";
+
   const faqs = [
     {
       question: `Are my ${isDocumentTool ? "documents" : "images"} uploaded or stored?`,
-      answer: `No. Your selected ${isDocumentTool ? "documents" : "images"} are processed in your browser. PixelKit does not send file contents to a processing server. Your local browser and downloads are under your control.`,
+      answer: `No. Your selected ${isDocumentTool ? "documents" : "images"} are processed locally in your browser. PixelKit does not send file contents to any server.`,
     },
     {
       question: "Is there a file size or batch limit?",
-      answer: "Each file can be up to 25 MB, and you can add up to 20 files per batch. Large batches may take longer on older devices.",
+      answer: "Each file can be up to 25 MB, and you can add up to 20 files per batch. Large batches may take longer on low-powered devices.",
     },
     {
       question: `What happens to my ${isDocumentTool ? "document formatting" : "image quality"}?`,
       answer: isDocumentTool
-        ? "Word documents are converted from their extracted text into a simple PDF, so complex layouts, images, and tables may not be retained. PDF re-saving may not reduce every file."
+        ? "Word documents retain their headings, tables, inline images, and styling in a clean A4 PDF layout. PDF compression optimizes visual elements to reduce file weight while maintaining legibility."
         : "Output size and appearance depend on the original image, its dimensions, transparency, target format, and encoder settings. Review the output and keep your original when it matters.",
     },
     {
       question: `Is ${isDocumentTool ? "document" : "image"} processing secure?`,
-      answer: isDocumentTool
-        ? "Processing runs locally in your browser. Only choose files you trust and keep an original copy of important documents."
-        : "Image processing happens in your browser. SVGs are parsed and stripped of scripts, foreign content, and external resource references before rasterization. Avoid opening files you do not trust, and keep a copy of important originals.",
+      answer: "All processing runs entirely on your device using client-side WebAssembly and JavaScript. No document or picture ever travels over the internet.",
     },
   ];
-  const jsonLd = {
+
+  const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: faqs.map((faq) => ({
@@ -38,6 +39,8 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
+
+  const appSchema = toolJsonLd(tool);
 
   return (
     <main>
@@ -50,7 +53,7 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
       </div>
       <section className="hero tool-hero">
         <span className="eyebrow"><Sparkles size={13} /> Free browser-based {isDocumentTool ? "document" : "image"} tool</span>
-        <h1>{tool.title.split(" — ")[0]} <span>— {tool.title.split(" — ")[1]}</span></h1>
+        <h1>{tool.title.split(" — ")[0]} <span>— {tool.title.split(" — ")[1] ?? ""}</span></h1>
         <p className="hero-copy">{tool.description}</p>
         <div className="trust-row"><ShieldCheck size={13} /> No uploads. No signup. Just your browser.</div>
       </section>
@@ -63,11 +66,6 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
         {tool.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         <h2>Format comparison: what to expect</h2>
         <p>{tool.comparison}</p>
-        <p>
-          {isDocumentTool
-            ? "Documents are processed locally in your browser. Conversion may simplify formatting, and PDF re-saving does not guarantee a smaller file. Review the downloaded result before sharing it."
-            : "Images are processed locally using your browser&apos;s native image support. The output can vary slightly between browsers because their built-in encoders are not identical. Check the finished file before using it in a project with strict display or file-size requirements."}
-        </p>
         <h2>Frequently asked questions</h2>
         <div className="faq-list">
           {faqs.map((faq) => (
@@ -78,9 +76,15 @@ export function ToolPage({ tool }: { tool: ToolDefinition }) {
           ))}
         </div>
       </article>
+
+      {/* Dual Structured Data Scripts */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(appSchema).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
     </main>
   );
